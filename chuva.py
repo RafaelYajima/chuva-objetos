@@ -55,13 +55,20 @@ def animacao_personagem():
 def adicionar_objeto():
     global lista_chuva_objetos
 
+    objetos_lista_aleatotio = ['coracao'] * 10 + ['moeda'] * 10 + ['Projetil'] * 80
+    tipo_objeto = choice(objetos_lista_aleatotio)
+
     posicao = (randint(10, 950), randint(-100, 0))
     velocidade = randint(5, 10)
 
-    objeto_rect = projetil_superficies[0].get_rect(center=posicao)
-
+    if tipo_objeto == 'Projetil':
+        objeto_rect = projetil_superficies[0].get_rect(center=posicao)
+    elif tipo_objeto == 'coracao':
+        objeto_rect = coracao_superficies[0].get_rect(center=posicao)
+    elif tipo_objeto == 'moeda':
+        objeto_rect = moeda_superficies[0].get_rect(center=posicao)
     lista_chuva_objetos.append({
-        'tipo': 'Projetil',
+        'tipo': tipo_objeto,
         'retangulo': objeto_rect,
         'velocidade': velocidade
     })
@@ -75,12 +82,19 @@ def movimento_objetos_chuva():
 
         if objeto['tipo'] == 'Projetil':
             tela.blit(projetil_superficies[projetil_index], objeto['retangulo'])
+        if objeto['tipo'] == 'coração':
+            tela.blit(coracao_superficies[projetil_index], objeto['retangulo'])
+        if objeto['tipo'] == 'moeda':
+            tela.blit(moeda_superficies[projetil_index], objeto['retangulo'])
+        
+        if objeto['retangulo'].y > 600:
+            lista_chuva_objetos.remove(objeto)
 
 # Inicializa o pygame
 pygame.init()
 
 # Cria a tela
-tamanho = (960, 540)
+tamanho = (1200, 600)
 tela = pygame.display.set_mode(tamanho)
 
 # Define o Titulo da Janela
@@ -129,7 +143,7 @@ for imagem in range(1, 9):
     img = pygame.image.load(f'assets/jogador/voar/Hero Boy Fly{imagem}.png').convert_alpha()
     jogador_voando_superficies.append(img)
 
-jogador_retangulo = jogador_parado_superficies[jogador_index].get_rect( center = (100, 430))
+jogador_retangulo = jogador_parado_superficies[jogador_index].get_rect( center = (50, 500))
 
 # Carrega o coração
 coracao_superficies = []
