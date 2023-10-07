@@ -32,8 +32,13 @@ def animacao_personagem():
     global jogador_index
     # Calcula o movimento do personagem
     jogador_retangulo.x += movimento_personagem
-    # jogador_surface = null
 
+    if jogador_retangulo.right >= 1200:
+        jogador_retangulo.right = 1200
+    elif jogador_retangulo.left <= 0:
+        jogador_retangulo.left = 0
+
+    # jogador_surface = null
     if movimento_personagem == 0: # Jogador está parado
         jogador_superficies = jogador_parado_superficies
     else: # Jogador está se movimentando
@@ -92,26 +97,31 @@ def movimento_objetos_chuva():
             lista_chuva_objetos.remove(objeto)
 
 def colisoes_jogador():
-    global vida, moeda
+    global coracao, moeda
     for objeto in lista_chuva_objetos:
         if jogador_retangulo.colliderect(objeto['retangulo']):
             if objeto['tipo'] == 'Projetil':
-                vida -= 1
+                coracao -= 1
             elif objeto['tipo'] == 'coracao':
-                vida += 1
+                coracao += 1
             elif objeto['tipo'] == 'moeda':
                 moeda += 1
         
             lista_chuva_objetos.remove(objeto)
 
 def mostra_textos():
-    texto_moeda = fonte_pixel.render("Moeda", True, '#FFFFFF')
-    texto_coracoes = fonte_pixel.render("Coraçoes   ", True, '#FFFFFF')
+    global moeda, coracao
+    texto_moeda = fonte_pixel.render(f"{moeda}", True, '#FFFFFF')
+    texto_coracoes = fonte_pixel.render(f"{coracao}", True, '#FFFFFF')
+    logo_moeda = pygame.transform.scale(moeda_superficies[0], (30, 30))
+    logo_coracao = pygame.transform.scale(coracao_superficies[0], (40, 40))
 
+    
+    tela.blit(texto_coracoes, (12, 10))
+    tela.blit(texto_moeda, (12, 50))
 
-    tela.blit(texto_moeda, (0, 0))
-    tela.blit(texto_moeda, (0, 50))
-
+    tela.blit(logo_coracao, (40, 0))
+    tela.blit(logo_moeda, (40, 47))
 
 # Inicializa o pygame
 pygame.init()
@@ -209,7 +219,7 @@ novo_objeto_timer = pygame.USEREVENT + 1
 pygame.time.set_timer(novo_objeto_timer, 500)
 
 jogo_ativo = True
-vida = 3
+coracao = 3
 moeda = 0
 
 # Loop principal do jogo
@@ -241,6 +251,10 @@ while True:
 
         if evento.type == novo_objeto_timer:
             adicionar_objeto()
+
+    if coracao == 0:
+        pygame.quit()
+        exit()
 
     # Desenha o fundo na tela
     tela.blit(plano_fundo, (0, 0))
