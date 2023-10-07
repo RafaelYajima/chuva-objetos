@@ -16,17 +16,17 @@ def animacao_rochas():
 
 def animacao_estrelas():
     global index_estrelas
-    index_estrelas += 0.22
+    index_estrelas += 0.08
 
     if (index_estrelas >= 4):
         index_estrelas = 0
     
     if (int(index_estrelas) == 0):
-        tela.blit(fundo_estrelas, (0, 0))
+        tela.blit(fundo_estrelas1, (0, 0))
     elif (int(index_estrelas) == 1):
-        tela.blit(fundo_estrelas_2, (0, 0))
+        tela.blit(fundo_estrelas2, (0, 0))
     else:
-        tela.blit(fundo_estrelas_3, (0, 0))
+        tela.blit(fundo_estrelas3, (0, 0))
 
 def animacao_personagem():
     global jogador_index
@@ -67,6 +67,7 @@ def adicionar_objeto():
         objeto_rect = coracao_superficies[0].get_rect(center=posicao)
     elif tipo_objeto == 'moeda':
         objeto_rect = moeda_superficies[0].get_rect(center=posicao)
+
     lista_chuva_objetos.append({
         'tipo': tipo_objeto,
         'retangulo': objeto_rect,
@@ -82,13 +83,35 @@ def movimento_objetos_chuva():
 
         if objeto['tipo'] == 'Projetil':
             tela.blit(projetil_superficies[projetil_index], objeto['retangulo'])
-        if objeto['tipo'] == 'coração':
+        if objeto['tipo'] == 'coracao':
             tela.blit(coracao_superficies[projetil_index], objeto['retangulo'])
         if objeto['tipo'] == 'moeda':
             tela.blit(moeda_superficies[projetil_index], objeto['retangulo'])
         
         if objeto['retangulo'].y > 600:
             lista_chuva_objetos.remove(objeto)
+
+def colisoes_jogador():
+    global vida, moeda
+    for objeto in lista_chuva_objetos:
+        if jogador_retangulo.colliderect(objeto['retangulo']):
+            if objeto['tipo'] == 'Projetil':
+                vida -= 1
+            elif objeto['tipo'] == 'coracao':
+                vida += 1
+            elif objeto['tipo'] == 'moeda':
+                moeda += 1
+        
+            lista_chuva_objetos.remove(objeto)
+
+def mostra_textos():
+    texto_moeda = fonte_pixel.render("Moeda", True, '#FFFFFF')
+    texto_coracoes = fonte_pixel.render("Coraçoes   ", True, '#FFFFFF')
+
+
+    tela.blit(texto_moeda, (0, 0))
+    tela.blit(texto_moeda, (0, 50))
+
 
 # Inicializa o pygame
 pygame.init()
@@ -104,11 +127,14 @@ pygame.display.set_caption("ChuvaMortal")
 ## Importa os arquivos necessários
 ##
 
+# Carrega a fonte do jogo
+fonte_pixel = pygame.font.Font('assets/font/PixelType.ttf', 50)
+
 # Carrega o plano de fundo
 plano_fundo = pygame.image.load('assets/fundo/Night-Background8.png').convert()
-fundo_estrelas = pygame.image.load('assets/fundo/Night-Background7.png').convert_alpha()
-fundo_estrelas_2 = pygame.image.load('assets/fundo/Night-Background6.png').convert_alpha()
-fundo_estrelas_3 = pygame.image.load('assets/fundo/Night-Background5.png').convert_alpha()
+fundo_estrelas1 = pygame.image.load('assets/fundo/Night-Background7.png').convert_alpha()
+fundo_estrelas2 = pygame.image.load('assets/fundo/Night-Background6.png').convert_alpha()
+fundo_estrelas3 = pygame.image.load('assets/fundo/Night-Background5.png').convert_alpha()
 fundo_rochas = pygame.image.load('assets/fundo/Night-Background4.png').convert_alpha()
 fundo_chao = pygame.image.load('assets/fundo/Night-Background3.png').convert_alpha()
 fundo_lua = pygame.image.load('assets/fundo/Night-Background2.png').convert_alpha()
@@ -116,9 +142,9 @@ fundo_rochas_voadoras = pygame.image.load('assets/fundo/Night-Background1.png').
 
 # Transforma o tamanho da imagem de fundo
 plano_fundo = pygame.transform.scale(plano_fundo, tamanho)
-fundo_estrelas = pygame.transform.scale(fundo_estrelas, tamanho)
-fundo_estrelas_2 = pygame.transform.scale(fundo_estrelas_2, tamanho)
-fundo_estrelas_3 = pygame.transform.scale(fundo_estrelas_3, tamanho)
+fundo_estrelas1 = pygame.transform.scale(fundo_estrelas1, tamanho)
+fundo_estrelas2 = pygame.transform.scale(fundo_estrelas2, tamanho)
+fundo_estrelas3 = pygame.transform.scale(fundo_estrelas3, tamanho)
 fundo_rochas = pygame.transform.scale(fundo_rochas, tamanho)
 fundo_chao = pygame.transform.scale(fundo_chao, tamanho)
 fundo_lua = pygame.transform.scale(fundo_lua, tamanho)
@@ -182,6 +208,10 @@ direcao_personagem = 0
 novo_objeto_timer = pygame.USEREVENT + 1
 pygame.time.set_timer(novo_objeto_timer, 500)
 
+jogo_ativo = True
+vida = 3
+moeda = 0
+
 # Loop principal do jogo
 while True:
     # EVENTOS
@@ -198,6 +228,9 @@ while True:
             if evento.key == pygame.K_LEFT:
                 movimento_personagem = -5
                 direcao_personagem = 0
+
+            if evento.type == pygame.K_ESCAPE:
+                jogo_ativo = False
 
         if evento.type == pygame.KEYUP:
             if evento.key == pygame.K_RIGHT:
@@ -224,6 +257,10 @@ while True:
     animacao_personagem()
 
     movimento_objetos_chuva()
+
+    colisoes_jogador()
+
+    mostra_textos()
 
     # Atualiza a tela com o conteudo
     pygame.display.update()
